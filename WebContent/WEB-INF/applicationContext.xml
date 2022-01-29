@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:security="http://www.springframework.org/schema/security"
+	
+
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	 	https://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	 	
+	 	http://www.springframework.org/schema/mvc
+	 	http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+	 	
+		http://www.springframework.org/schema/context
+		https://www.springframework.org/schema/context/spring-context-4.3.xsd
+		
+		http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security.xsd
+        
+       
+		">
+
+<bean class="org.springframework.jdbc.datasource.DriverManagerDataSource" id="ds">
+		<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+		<property name="url" value="jdbc:mysql://localhost:3306/tour" />
+		<property name="username" value="root" />
+		<property name="password" value="root" />
+	</bean>
+	<bean id="customAuthenticationSuccessHandler" class="com.lc.utility.CustomAuthenticationSuccessHandler" />
+	
+   <security:http use-expressions="true">
+   	<security:form-login login-page="/login" authentication-success-handler-ref="customAuthenticationSuccessHandler" />
+   	<security:logout logout-url="/logout" delete-cookies="JSESSIONID" invalidate-session="true"/>
+    <security:csrf disabled="true"/>
+    
+   	<security:intercept-url pattern="/admin/**" access="hasRole('ADMIN')" />
+   	<security:intercept-url pattern="/customer/**" access="hasRole('CUSTOMER')" />
+   
+   </security:http>
+   
+   <security:authentication-manager>
+   	<security:authentication-provider>
+   		<security:jdbc-user-service 
+   			data-source-ref="ds" 
+   			users-by-username-query="select email,password,enabled from user where email=?"
+   			authorities-by-username-query="select email,role from user where email=?"			
+   		/>
+   		<security:password-encoder hash="bcrypt"/>
+   	</security:authentication-provider>
+   </security:authentication-manager>
+
+
+
+</beans>
